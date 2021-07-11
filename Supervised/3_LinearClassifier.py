@@ -70,3 +70,236 @@ for c in classifiers:
 # Plot the classifiers
 plot_4_classifiers(X, y, classifiers)
 plt.show() #First two are linear, the two others are non linear
+
+
+#Calculating the loss function of categorial classification
+
+# The squared error, summed over training examples
+def my_loss(w):
+    s = 0
+    for i in range(y.size):
+        # Get the true and predicted target values for example 'i'
+        y_i_true = y[i]
+        y_i_pred = w@X[i]
+        s = s + (y_i_pred-y_i_true)**2
+    return s
+
+# Returns the w that makes my_loss(w) smallest
+w_fit = minimize(my_loss, X[0]).x
+print(w_fit)
+
+# Compare with scikit-learn's LinearRegression coefficients
+lr = LinearRegression(fit_intercept=False).fit(X,y)
+print(lr.coef_)
+
+
+# plotting error diagrams:
+
+# Mathematical functions for logistic and hinge losses
+def log_loss(raw_model_output):
+   return np.log(1+np.exp(-raw_model_output))
+def hinge_loss(raw_model_output):
+   return np.maximum(0,1-raw_model_output)
+
+# Create a grid of values and plot
+grid = np.linspace(-2,2,1000)
+plt.plot(grid, log_loss(grid), label='logistic')
+plt.plot(grid, hinge_loss(grid), label='hinge')
+plt.legend()
+plt.show()
+
+
+
+
+# The logistic loss, summed over training examples
+def my_loss(w):
+    s = 0
+    for i in range(len(X)):
+        raw_model_output = w@X[i]
+        s = s + log_loss(raw_model_output * y[i])
+    return s
+
+# Returns the w that makes my_loss(w) smallest
+w_fit = minimize(my_loss, X[0]).x
+print(w_fit)
+
+# Compare with scikit-learn's LogisticRegression
+lr = LogisticRegression(fit_intercept=False, C=1000000).fit(X,y)
+print(lr.coef_)
+
+
+
+#Finding the right C for Logitis regression
+
+# Train and validaton errors initialized as empty list
+train_errs = list()
+valid_errs = list()
+
+# Loop over values of C_value
+for C_value in [0.001, 0.01, 0.1, 1, 10, 100, 1000]:
+    # Create LogisticRegression object and fit
+    lr = LogisticRegression(C=C_value)
+    lr.fit(X_train,y_train)
+    
+    # Evaluate error rates and append to lists
+    train_errs.append( 1.0 - lr.score(X_train,y_train) )
+    valid_errs.append( 1.0 - lr.score(X_valid,y_valid) )
+    
+# Plot results
+plt.semilogx(C_values, train_errs, C_values, valid_errs)
+plt.legend(("train", "validation"))
+plt.show()
+
+
+#Finding the best C
+
+# Specify L1 regularization
+lr = LogisticRegression(penalty='l1')
+
+# Instantiate the GridSearchCV object and run the search
+searcher = GridSearchCV(lr, {'C':[0.001, 0.01, 0.1, 1, 10]})
+searcher.fit(X_train, y_train)
+
+# Report the best parameters
+print("Best CV params", searcher.best_params_)
+
+# Find the number of nonzero coefficients (selected features)
+best_lr = searcher.best_estimator_
+coefs = best_lr.coef_
+print("Total number of features:", coefs.size)
+print("Number of selected features:", np.count_nonzero(coefs))
+
+#Finding the best words (Coefficients of Logisitc Regression)
+
+# Get the indices of the sorted cofficients
+inds_ascending = np.argsort(lr.coef_.flatten()) 
+inds_descending = inds_ascending[::-1]
+
+# Print the most positive words
+print("Most positive words: ", end="")
+for i in range(5):
+    print(vocab[inds_descending[i]], end=", ")
+print("\n")
+
+# Print most negative words
+print("Most negative words: ", end="")
+for i in range(5):
+    print(vocab[inds_ascending[i]], end=", ")
+print("\n")
+
+
+
+
+
+lr = LogisticRegression()
+lr.fit(X,y)
+
+# Get predicted probabilities
+proba = lr.predict_proba(X)
+
+# Sort the example indices by their maximum probability
+proba_inds = np.argsort(np.max(proba,axis=1))
+
+# Show the most confident (least ambiguous) digit
+show_digit(proba_inds[-1], lr)
+
+# Show the least confident (most ambiguous) digit
+show_digit(proba_inds[0], lr)
+
+
+#O vs rest and Multinomial
+
+# Fit one-vs-rest logistic regression classifier
+lr_ovr = LogisticRegression()
+lr_ovr.fit(X_train, y_train)
+
+print("OVR training accuracy:", lr_ovr.score(X_train, y_train))
+print("OVR test accuracy    :", lr_ovr.score(X_test, y_test))
+
+# Fit softmax classifier
+lr_mn = LogisticRegression(multi_class="multinomial",solver="lbfgs")
+lr_mn.fit(X_train, y_train)
+
+print("Softmax training accuracy:", lr_mn.score(X_train, y_train))
+print("Softmax test accuracy    :", lr_mn.score(X_test, y_test))
+
+
+
+#Showing linear inefficiency in some cases
+
+# Print training accuracies
+print("Softmax     training accuracy:", lr_mn.score(X_train, y_train))
+print("One-vs-rest training accuracy:", lr_ovr.score(X_train, y_train))
+
+# Create the binary classifier (class 1 vs. rest)
+lr_class_1 = LogisticRegression(C=100)
+lr_class_1.fit(X_train, y_train==1)
+
+# Plot the binary classifier (class 1 vs. rest)
+plot_classifier(X_train, y_train==1, lr_class_1)
+
+
+# We'll use SVC instead of LinearSVC from now on
+from sklearn.svm import SVC
+
+# Create/plot the binary classifier (class 1 vs. rest)
+svm_class_1 = SVC()
+svm_class_1.fit(X_train,y_train==1)
+plot_classifier(X_train,y_train==1,svm_class_1)
+
+
+
+
+#Finding best gamma parameter for SVC (avoid over fitting)
+
+# Instantiate an RBF SVM
+svm = SVC()
+
+# Instantiate the GridSearchCV object and run the search
+parameters = {'gamma':[0.00001, 0.0001, 0.001, 0.01, 0.1]}
+searcher = GridSearchCV(svm, parameters)
+searcher.fit(X,y)
+
+# Report the best parameters
+print("Best CV params", searcher.best_params_)
+
+
+
+
+#Same but with two hyper parameters
+
+# Instantiate an RBF SVM
+svm = SVC()
+
+# Instantiate the GridSearchCV object and run the search
+parameters = {'C':[0.1, 1, 10], 'gamma':[0.00001, 0.0001, 0.001, 0.01, 0.1]}
+searcher = GridSearchCV(svm, parameters)
+searcher.fit(X,y)
+
+# Report the best parameters and the corresponding score
+print("Best CV params", searcher.best_params_)
+print("Best CV accuracy", searcher.best_score_)
+
+# Report the test accuracy using these best parameters
+print("Test accuracy of best grid search hypers:", searcher.score(X_test,y_test))
+
+
+#Hyperparameters tuning with a bunch of params
+
+# We set random_state=0 for reproducibility 
+linear_classifier = SGDClassifier(random_state=0)
+
+# Instantiate the GridSearchCV object and run the search
+parameters = {'alpha':[0.00001, 0.0001, 0.001, 0.01, 0.1, 1], 
+             'loss':['hinge','log'], 'penalty':['l1','l2']}
+searcher = GridSearchCV(linear_classifier, parameters, cv=10)
+searcher.fit(X_train, y_train)
+
+# Report the best parameters and the corresponding score
+print("Best CV params", searcher.best_params_)
+print("Best CV accuracy", searcher.best_score_)
+print("Test accuracy of best grid search hypers:", searcher.score(X_test, y_test))
+
+#Best CV params {'alpha': 0.0001, 'loss': 'hinge', 'penalty': 'l1'}
+#    Best CV accuracy 0.94351630867144
+#    Test accuracy of best grid search hypers: 0.9592592592592593

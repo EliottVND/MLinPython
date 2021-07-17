@@ -1,2 +1,2 @@
 # ML in Python
-As I am trying to learn a bit more about Machine Learning, I started the Career Path in ML from DataCamp. I will push here every code I write during my learning sessions.
+As I am trying to learn a bit more about Machine Learning, I started a course with 20+ 4-hours courses. I will push here every code I write during my learning sessions.

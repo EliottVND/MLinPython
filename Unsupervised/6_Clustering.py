@@ -406,4 +406,3 @@ plt.show()
 for cluster in fifa['cluster_labels'].unique():
     print(cluster, fifa[fifa['cluster_labels'] == cluster]['name'].values[:5])
     # Prints out attaquants and défenseurs
-

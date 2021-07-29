@@ -260,5 +260,3 @@ similarities = df.dot(artist)
 
 # Display those with highest cosine similarity
 print(similarities.nlargest())
-
-

@@ -88,3 +88,85 @@ so_survey_df['boundary_binned'] = pd.cut(so_survey_df['ConvertedSalary'],
 
 # Print the first 5 rows of the boundary_binned column
 print(so_survey_df[['boundary_binned', 'ConvertedSalary']].head())
+
+# Chapter 2
+
+# Drop columns with missing values
+
+# Create a new DataFrame dropping all columns with incomplete rows
+no_missing_values_cols = so_survey_df.dropna(how='any', axis=1)
+
+# Print the shape of the new DataFrame
+print(no_missing_values_cols.shape)
+
+# Drop rows where an input in a certain column is missing
+
+# Drop all rows where Gender is missing
+no_gender = so_survey_df.dropna(subset=['Gender'])
+
+# Print the shape of the new DataFrame
+print(no_gender.shape)
+
+
+# Filling NA
+
+# Replace missing values
+so_survey_df['Gender'].fillna(value='Not Given',inplace=True)
+
+# Print the count of each value
+print(so_survey_df['Gender'].value_counts())
+
+
+# Filling numerical values
+
+# Fill missing values with the mean
+so_survey_df['StackOverflowJobsRecommend'].fillna(so_survey_df['StackOverflowJobsRecommend'].mean(), inplace=True)
+
+# Round the StackOverflowJobsRecommend values
+so_survey_df['StackOverflowJobsRecommend'] = round(so_survey_df['StackOverflowJobsRecommend'])
+
+# Print the top 5 rows
+print(so_survey_df['StackOverflowJobsRecommend'].head())
+
+
+# Removing annoying stuff
+
+# Remove the dollar signs in the column
+so_survey_df['RawSalary'] = so_survey_df['RawSalary'].str.replace('$', '')
+
+
+
+# Attempt to convert the column to numeric values
+numeric_vals = pd.to_numeric(so_survey_df['RawSalary'], errors='coerce')
+
+# Find the indexes of missing values
+idx = numeric_vals.isna()
+
+# Print the relevant rows
+print(so_survey_df['RawSalary'][idx])
+
+# Replace the offending characters
+so_survey_df['RawSalary'] = so_survey_df['RawSalary'].str.replace('£','')
+
+# Convert the column to float
+so_survey_df['RawSalary'] = so_survey_df['RawSalary'].astype(float)
+
+# Print the column
+print(so_survey_df['RawSalary'])
+
+
+# Use method chaining
+so_survey_df['RawSalary'] = so_survey_df['RawSalary']\
+                              .str.replace(',','')\
+                              .str.replace('$','')\
+                              .str.replace('£','')\
+                              .astype(float)
+ 
+# Print the RawSalary column
+print(so_survey_df['RawSalary'])
+
+# Using boxplot
+
+# Create a boxplot of ConvertedSalary
+so_numeric_df[['ConvertedSalary']].boxplot()
+plt.show()

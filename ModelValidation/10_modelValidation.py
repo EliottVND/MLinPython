@@ -85,4 +85,120 @@ X_train, X_val, y_train, y_val =\
 # Different metrics to valide our model
 
 # MAE : Mean Absolute error (en % d'erreur) : 9.99 = 10% d'erreur
-# MSE : Mean Squared Error prend en compte les outliers de manière + importannte
+# MSE : Mean Squared Error prend en compte les outliers de manière + importante
+
+    # MAE :
+
+        from sklearn.metrics import mean_absolute_error
+
+        # Manually calculate the MAE
+        n = len(predictions)
+        mae_one = sum(abs(y_test - predictions)) / n
+        print('With a manual calculation, the error is {}'.format(mae_one))
+
+        # Use scikit-learn to calculate the MAE
+        mae_two = mean_absolute_error(y_test, predictions)
+        print('Using scikit-lean, the error is {}'.format(mae_two))
+
+    # MSE
+
+        from sklearn.metrics import mean_squared_error
+        n = len(predictions)
+        # Finish the manual calculation of the MSE
+        mse_one = sum((y_test - predictions)**2) / n
+        print('With a manual calculation, the error is {}'.format(mse_one))
+
+        # Use the scikit-learn function to calculate MSE
+        mse_two = mean_squared_error(y_test,predictions)
+        print('Using scikit-lean, the error is {}'.format(mse_two))
+
+# Using subsets to see how errors apply specificaly
+
+    # Find the East conference teams
+    east_teams = labels == "E"
+
+    # Create arrays for the true and predicted values
+    true_east = y_test[east_teams]
+    preds_east = predictions[east_teams]
+
+    # Print the accuracy metrics
+    print('The MAE for East teams is {}'.format(
+        mae(true_east, preds_east)))
+
+    # Print the West accuracy
+    print('The MAE for West conference is {}'.format(west_error))
+
+
+# Metrics : Precision, accuracy and recall
+
+    # Calculate and print the accuracy
+    accuracy = (324 + 491) / (953)
+    print("The overall accuracy is {0: 0.2f}".format(accuracy))
+
+    # Calculate and print the precision
+    precision = (491) / (491 + 15)
+    print("The precision is {0: 0.2f}".format(precision))
+
+    # Calculate and print the recall
+    recall = (491) / (491 + 123)
+    print("The recall is {0: 0.2f}".format(recall))
+
+# Confusion matrix
+
+
+    from sklearn.metrics import confusion_matrix
+
+    # Create predictions
+    test_predictions = rfc.predict(X_test)
+
+    # Create and print the confusion matrix
+    cm = confusion_matrix(y_test, test_predictions)
+    print(cm)
+
+    # Print the true positives (actual 1s that were predicted 1s)
+    print("The number of true positives is: {}".format(cm[1, 1]))
+
+    # Applying precision metrics
+
+    from sklearn.metrics import precision_score
+
+    test_predictions = rfc.predict(X_test)
+
+    # Create precision or recall score based on the metric you imported
+    score = precision_score(y_test, test_predictions)
+
+    # Print the final result
+    print("The precision value is {0:.2f}".format(score))
+
+
+#Over-under fitting
+
+    # Update the rfr model
+    rfr = RandomForestRegressor(n_estimators=25,
+                                random_state=1111,
+                                max_features=4)
+    rfr.fit(X_train, y_train)
+
+    # Print the training and testing accuracies 
+    print('The training error is {0:.2f}'.format(
+      mae(y_train, rfr.predict(X_train))))
+    print('The testing error is {0:.2f}'.format(
+      mae(y_test, rfr.predict(X_test))))
+
+    # Comparing scores 
+
+    from sklearn.metrics import accuracy_score
+
+    test_scores, train_scores = [], []
+    for i in [1, 2, 3, 4, 5, 10, 20, 50]:
+        rfc = RandomForestClassifier(n_estimators=i, random_state=1111)
+        rfc.fit(X_train, y_train)
+        # Create predictions for the X_train and X_test datasets.
+        train_predictions = rfc.predict(X_train)
+        test_predictions = rfc.predict(X_test)
+        # Append the accuracy score for the test and train predictions.
+        train_scores.append(round(accuracy_score(y_train, train_predictions), 2))
+        test_scores.append(round(accuracy_score(y_test, test_predictions), 2))
+    # Print the train and test scores.
+    print("The training scores were: {}".format(train_scores))
+    print("The testing scores were: {}".format(test_scores))
